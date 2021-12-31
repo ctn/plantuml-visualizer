@@ -27,4 +27,7 @@ export const Constants = {
     setDeniedUrls: 'setDeniedUrls',
     setPumlServerUrl: 'setPumlServerUrl',
   },
+  delimiterPattern: /```/,
+  startPattern: /start(uml|wbs|json|yaml|mindmap)/,
+  endPattern: /end(uml|wbs|json|yaml|mindmap)/,
 } as const;

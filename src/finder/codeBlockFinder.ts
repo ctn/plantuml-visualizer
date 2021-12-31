@@ -17,12 +17,46 @@ export class CodeBlockFinder implements CodeFinder {
     for (let i = 0; i < $texts.length; i++) {
       const $text = $texts.eq(i);
       let content = $text.text().trim();
-      if (!/start(uml|wbs|json|yaml|mindmap)/.test(content) || !/end(uml|wbs|json|yaml|mindmap)/.test(content))
-        continue;
+      if (!Constants.startPattern.test(content) || !Constants.endPattern.test(content)) continue;
       content = await this.preprocessIncludeDirective(webPageUrl, content);
       content = await this.preprocessIncludesubDirective(webPageUrl, content);
       result.push({ $text, text: content });
     }
+
+    // Now look inside tables, which is where GitHub displays code
+    await this.findInTables(webPageUrl, $root, result);
+
+    return result;
+  }
+
+  /**
+   * This is designed to work with GitHub source code, which is laid out as table rows.
+   */
+  private async findInTables(webPageUrl: string, $root: JQuery<Node>, result: any[]): Promise<UmlCodeContent[]> {
+    const $tables = $root.find(`table:not([${Constants.ignoreAttribute}])`);
+
+    for (let i = 0; i < $tables.length; i++) {
+      const $table = $tables.eq(i);
+      const $rows = $table.find(`tr:not([${Constants.ignoreAttribute}])`);
+      for (let j = 0; j < $rows.length; j++) {
+        let $row = $rows.eq(j);
+        let content = $row.text().trim();
+
+        if (!Constants.startPattern.test(content)) continue;
+
+        do {
+          content += '\n' + $row.text().trim();
+          $row.remove();
+          $row = $rows.eq(++j);
+        } while (!Constants.endPattern.test(content));
+
+        content = await this.preprocessIncludeDirective(webPageUrl, content);
+        content = await this.preprocessIncludesubDirective(webPageUrl, content);
+        const $div = $row.children().last().append('<div></div>');
+        result.push({ $text: $div, text: content });
+      }
+    }
+
     return result;
   }
 
