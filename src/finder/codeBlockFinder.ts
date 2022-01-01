@@ -17,7 +17,7 @@ export class CodeBlockFinder implements CodeFinder {
     for (let i = 0; i < $texts.length; i++) {
       const $text = $texts.eq(i);
       let content = $text.text().trim();
-      if (!Constants.startPattern.test(content) || !Constants.endPattern.test(content)) continue;
+      if (!Constants.startPattern.test(content.substring(0, 10)) || !Constants.endPattern.test(content)) continue;
       content = await this.preprocessIncludeDirective(webPageUrl, content);
       content = await this.preprocessIncludesubDirective(webPageUrl, content);
       result.push({ $text, text: content });
@@ -44,11 +44,11 @@ export class CodeBlockFinder implements CodeFinder {
 
         if (!Constants.startPattern.test(content)) continue;
 
-        do {
-          content += '\n' + $row.text().trim();
+        while (!Constants.endPattern.test(content)) {
           $row.remove();
           $row = $rows.eq(++j);
-        } while (!Constants.endPattern.test(content));
+          content += '\n' + $row.text().trim();
+        }
 
         content = await this.preprocessIncludeDirective(webPageUrl, content);
         content = await this.preprocessIncludesubDirective(webPageUrl, content);
