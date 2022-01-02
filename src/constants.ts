@@ -3,7 +3,7 @@ import type { Config } from './config';
 export const Constants = {
   defaultConfig: {
     extensionEnabled: true,
-    pumlServerUrl: 'https://willbooster-plantuml.herokuapp.com',
+    pumlServerUrl: 'https://plantuml.aitomatic.com',
     allowedUrls: [
       'https://github.com/*',
       'https://raw.githubusercontent.com/*',
